@@ -1,7 +1,9 @@
 package com.giftsubscription.controller;
 
+import com.giftsubscription.dto.SubscriptionPurchaseRequest;
 import com.giftsubscription.model.Subscription;
 import com.giftsubscription.service.SubscriptionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +46,17 @@ public class SubscriptionController {
             return ResponseEntity.badRequest().body("Ошибка: либо недостаточно средств, либо подписка уже куплена.");
         }
     }
+
+    @PostMapping("/purchase")
+    public ResponseEntity<String> purchase(@RequestBody @Valid SubscriptionPurchaseRequest request) {
+        boolean success = subscriptionService.purchaseSubscription(request);
+        if (success) {
+            return ResponseEntity.ok("Подписка успешно оформлена.");
+        } else {
+            return ResponseEntity.badRequest().body("Ошибка: не удалось оформить подписку.");
+        }
+    }
+
 
 
 }

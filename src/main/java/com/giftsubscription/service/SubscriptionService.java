@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.giftsubscription.dto.SubscriptionPurchaseRequest;
+
 @Service
 public class SubscriptionService {
 
@@ -104,4 +106,30 @@ public class SubscriptionService {
         Optional<User> userOptional = userRepository.findByMail(mail);
         return userOptional.map(subscriptionRepository::findByUser).orElse(List.of());
     }
+    public boolean purchaseSubscription(SubscriptionPurchaseRequest request) {
+        Optional<User> userOptional = userRepository.findByMail(request.getMail());
+        if (userOptional.isEmpty()) return false;
+
+        Optional<AvailableSubscription> availableSubOpt = availableSubscriptionRepository.findById(request.getSubscriptionId());
+        if (availableSubOpt.isEmpty()) return false;
+
+        User user = userOptional.get();
+
+        // Проверка: есть ли уже активная подписка
+        if (subscriptionRepository.existsByUser(user)) return false;
+
+        LocalDate now = LocalDate.now();
+        LocalDate end = now.plusMonths(12); // пока на 1 год
+
+        Subscription subscription = new Subscription(
+                now,
+                end,
+                user,
+                availableSubOpt.get()
+        );
+
+        subscriptionRepository.save(subscription);
+        return true;
+    }
+
 }
