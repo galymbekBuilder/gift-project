@@ -3,9 +3,10 @@ package com.giftsubscription.service;
 import com.giftsubscription.dto.UserRegisterDTO;
 import com.giftsubscription.dto.UserResponseDTO;
 import com.giftsubscription.exception.NotFoundException;
+import com.giftsubscription.mapper.UserMapper;
+import com.giftsubscription.model.SubscriptionType;
 import com.giftsubscription.model.User;
 import com.giftsubscription.repository.UserRepository;
-import com.giftsubscription.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class UserService {
         }
 
         User user = userMapper.toEntity(dto);
+        user.setSubscriptionType(SubscriptionType.STANDARD); // <--- подписка по умолчанию
         userRepository.save(user);
         return true;
     }
@@ -59,5 +61,4 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         return userMapper.toDto(user);
     }
-
 }

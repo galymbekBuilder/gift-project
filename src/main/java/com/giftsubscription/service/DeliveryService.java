@@ -18,5 +18,6 @@ public class DeliveryService {
     public List<Delivery> getDeliveriesByUserMail(String mail) {
         return deliveryRepository.findBySubscription_User_Mail(mail);
     }
+
 }
 

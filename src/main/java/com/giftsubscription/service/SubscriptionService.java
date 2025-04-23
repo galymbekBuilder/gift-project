@@ -114,22 +114,41 @@ public class SubscriptionService {
         if (availableSubOpt.isEmpty()) return false;
 
         User user = userOptional.get();
+        AvailableSubscription available = availableSubOpt.get();
 
-        // Проверка: есть ли уже активная подписка
+        // 🧠 Проверка: есть ли уже активная подписка
         if (subscriptionRepository.existsByUser(user)) return false;
 
+        // 💰 Проверка: хватает ли баланса
+        if (user.getBalance() < available.getPrice()) return false;
+
+        // 💳 Вычитаем цену и сохраняем пользователя
+        user.setBalance(user.getBalance() - available.getPrice());
+        userRepository.save(user);
+
+        // 📦 Создаём подписку
         LocalDate now = LocalDate.now();
-        LocalDate end = now.plusMonths(12); // пока на 1 год
+        LocalDate end = now.plusMonths(12); // подписка на 1 год
 
         Subscription subscription = new Subscription(
                 now,
                 end,
                 user,
-                availableSubOpt.get()
+                available
         );
 
         subscriptionRepository.save(subscription);
+
+        // 📦 Генерация 12 доставок (по 1 на каждый месяц)
+        for (int i = 0; i < 12; i++) {
+            LocalDate deliveryDate = now.plusMonths(i);
+            Delivery delivery = new Delivery(deliveryDate, DeliveryStatus.PENDING, subscription);
+            deliveryRepository.save(delivery);
+        }
+
         return true;
     }
+
+
 
 }
